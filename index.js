@@ -4,11 +4,13 @@ var chartNode = new ChartjsNode(1200, 700);
 
 const { positions, candles } = require('./data')
 
+const ChartTitle = positions["name"]
+
 const chartData = [];
 const pointData = [];
 
 dataSet(candles);
-setPoints(positions);
+setPoints(positions["robotPositions"]);
 
 const months = {
     '01': 'Jan',
@@ -23,6 +25,13 @@ const months = {
     '10': 'Oct',
     '11': 'Nov',
     '12': 'Dec'
+}
+
+const typeActions = {
+    'short': 'Short',
+    'long': 'Long',
+    'closeShort': 'Close Short',
+    'closeLong': 'Close Long'
 }
 
 chartNode.on('beforeDraw', function (Chart) {
@@ -49,7 +58,7 @@ chartNode.on('beforeDraw', function (Chart) {
     
     const FinancialLinearScale = Chart.scaleService.getScaleConstructor('linear').extend({
 		_parseValue: function (value) {
-			let start, end, min, max;
+            let start, end, min, max;
 
 			if (typeof value.c !== 'undefined') {
 				start = +this.getRightValue(value.l);
@@ -76,7 +85,7 @@ chartNode.on('beforeDraw', function (Chart) {
 			const chart = me.chart;
 			const data  = chart.data;
 			const datasets = data.datasets;
-			const isHorizontal = me.isHorizontal();
+            const isHorizontal = me.isHorizontal();
 
 			function IDMatches(meta) {
 				return isHorizontal ? meta.xAxisID === me.id : meta.yAxisID === me.id;
@@ -90,7 +99,7 @@ chartNode.on('beforeDraw', function (Chart) {
 				
 				if (chart.isDatasetVisible(datasetIndex) && IDMatches(meta)) {
 					helpers.each(dataset.data, function(rawValue, index) {
-						const value = me._parseValue(rawValue);
+                        const value = me._parseValue(rawValue);
 
 						if (isNaN(value.min) || isNaN(value.max) || meta.data[index].hidden) return;
 						if (me.min === null || value.min < me.min) me.min = value.min;
@@ -99,10 +108,10 @@ chartNode.on('beforeDraw', function (Chart) {
 				}
 			});
 
-			const space = (me.max - me.min) * 0.05;
+			const space = (me.max - me.min) * 0.2;
 
 			me.min -= space;
-			me.max += space;
+            me.max += space;
 
 			this.handleTickRangeOptions();
 		}
@@ -122,15 +131,36 @@ chartNode.on('beforeDraw', function (Chart) {
 					major: {
 						enabled: true,
 						fontStyle: 'bold'
-					},
+                    },
+                    fontSize: 18,
+                    fontStyle: 'bold',
+                    fontColor: '#ffffff',
 					source: 'data',
 					maxRotation: 0,
 					autoSkip: true,
-					autoSkipPadding: 75,
+					autoSkipPadding: 25,
 					sampleSize: 100
 				}
 			}],
-			yAxes: [{ type: 'financialLinear' }]
+            yAxes: [{
+                type: 'financialLinear',
+                distribution: 'series',
+				offset: true,
+                ticks: {
+					major: {
+						enabled: true,
+						fontStyle: 'bold'
+                    },
+                    fontSize: 18,
+                    fontStyle: 'bold',
+                    fontColor: '#ffffff',
+					source: 'data',
+					maxRotation: 0,
+					autoSkip: true,
+					autoSkipPadding: 25,
+					sampleSize: 100
+				}
+            }]
 		}
     };
     
@@ -145,15 +175,15 @@ chartNode.on('beforeDraw', function (Chart) {
 			const model = element._model;
 			
 
-			const vscale = me._getValueScale();
-			const base   = vscale.getBasePixel();
+            const vscale = me._getValueScale();
+            const base   = vscale.getBasePixel();
 			const ruler  = me._ruler || me.getRuler();
-			const horizontal = vscale.isHorizontal();
+            const horizontal = vscale.isHorizontal();
 			const vpixels    = me.calculateBarValuePixels(me.index, index, options);
 			const ipixels    = me.calculateBarIndexPixels(me.index, index, ruler, options);
 			const chart      = me.chart;
 			const datasets   = chart.data.datasets;
-			const indexData  = datasets[me.index].data[index];
+            const indexData = datasets[me.index].data[index];
 
 			model.horizontal = horizontal;
 			model.base = reset ? base : vpixels.base;
@@ -176,7 +206,7 @@ chartNode.on('beforeDraw', function (Chart) {
 			Chart.canvasHelpers.clipArea(ctx, this.chart.chartArea);
 
 			for (let i = 0; i < elems.length; i++) {
-				const d = dataset.data[i].o;
+                const d = dataset.data[i].o;
 
 				if (d !== null && d !== undefined && !isNaN(d)) elems[i].draw();
 			}
@@ -272,8 +302,8 @@ chartNode.on('beforeDraw', function (Chart) {
 			ctx.moveTo(x, l);
 			ctx.lineTo(x, Math.max(o, c));
 			ctx.stroke();
-			ctx.fillRect(x - vm.width / 7, c, vm.width / 4, o - c);
-			ctx.closePath();
+			ctx.fillRect(x - vm.width / 6, c, vm.width / 3, o - c);
+            ctx.closePath();
 
 			for (let k = 0; k < pointData.length; k++) if (pointData[k].entry_date_format == t) fillPoin(ctx, {x, h, l, elem: pointData[k]})
 		},
@@ -326,7 +356,7 @@ const chartJsOptions = {
 	type: 'candlestick',
 	data: {
 	  	datasets: [{
-			label: 'Robot - 1 Bitfinex BTC/USD 1D',
+			label: ChartTitle,
 			data: chartData,
 			color: {
 				up: '#1CA46B',
@@ -369,8 +399,7 @@ const chartJsOptions = {
 function fillPoin(ctx, params) {
 	const y  = (params.l < params.h ? params.l : params.h) - 10,
 		data = params.elem,
-		date = (data.entry_date).split("T")[0],
-		time = (data.entry_date).split("T")[1],
+		dateTime = dateTimeFormat(data.entry_date),
 		circleClr = ctx.createLinearGradient(0, 20, 0, 0);
 	
 	let borderClr, firstClr, secondClr
@@ -388,8 +417,6 @@ function fillPoin(ctx, params) {
 		firstClr  = "rgba(153, 153, 153, 0.2)";
 		secondClr = "rgba(153, 153, 153, 0.2)";
 	}
-
-	console.log('data', data)
 		
 	ctx.fillStyle = borderClr
 	ctx.beginPath();
@@ -424,27 +451,43 @@ function fillPoin(ctx, params) {
 
 	ctx.beginPath();
 	ctx.moveTo(params.x, y - 14);
-	ctx.lineTo(params.x - 3, y - 20);
-	ctx.arcTo(params.x - 44, y - 20, params.x - 44, y - 24, 2);
-	ctx.arcTo(params.x - 44, y - 84, params.x - 40, y - 84, 2);
-	ctx.arcTo(params.x + 44, y - 84, params.x + 44, y - 80, 2);
-	ctx.arcTo(params.x + 44, y - 20, params.x + 40, y - 20, 2);
-	ctx.lineTo(params.x + 3, y - 20);
+	ctx.lineTo(params.x - 4, y - 20);
+	ctx.arcTo(params.x - 80, y - 20, params.x - 80, y - 28, 4);
+	ctx.arcTo(params.x - 80, y - 120, params.x - 72, y - 120, 4);
+	ctx.arcTo(params.x + 80, y - 120, params.x + 80, y - 116, 4);
+	ctx.arcTo(params.x + 80, y - 20, params.x + 72, y - 20, 4);
+	ctx.lineTo(params.x + 4, y - 20);
 	ctx,lineWidth = 1
 	ctx.fillStyle = "#3D4977";
 	ctx.strokeStyle = "#39436A";
 	ctx.stroke();
 	ctx.fill();
-	ctx.closePath();
-
-	ctx.font = "bold 12px 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'";
-	ctx.fillStyle = "#AEC6EE";
+    ctx.closePath();
+    
+	ctx.font = "bold 24px 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'";
+	ctx.fillStyle = "#ffffff"; // "#AEC6EE"
 	ctx.textAlign = "center";
-	ctx.fillText(time, params.x, y - 28);
-	ctx.fillText(date, params.x, y - 43);
-	ctx.fillText("$" + data.entry_price, params.x, y - 58);
-	ctx.fillText(data.entry_action + " " + data.code, params.x, y - 73);
+	ctx.fillText(dateTime, params.x, y - 40);
+	ctx.fillText(summFormat(data.entry_price), params.x, y - 70);
+	ctx.fillText(typeActions[data.entry_action] + ": " + data.code, params.x, y - 100);
 	ctx.globalCompositeOperation = "source-over";
+}
+
+function summFormat(params) {
+    let nums = ((params + "").split("").reverse().join("").replace(/(\d{3})/g, "$1,").split("").reverse().join("").replace(/^ /, "")).split(".");
+    let finalStr = nums[0] + (nums[1] ? "." + (nums[1]).substring(0, 2) : "") + "$"
+
+    if (finalStr[0] == ",") finalStr = finalStr.replace(/^,/, '')
+    
+    return finalStr
+}
+
+function dateTimeFormat(params) {
+    let dateTimeStrs = params.split("T")
+    let date = `${dateTimeStrs[0].split("-")[2]} ${months[dateTimeStrs[0].split("-")[1]]}`
+    let time = `${dateTimeStrs[1].split(":")[0]}:${dateTimeStrs[1].split(":")[1]}` 
+
+    return `${date} ${time}`
 }
 
 function dataSet(params) {
@@ -468,13 +511,13 @@ function setPoints(params) {
 		
 		if (elem.entry_action !== null && elem.exit_action !== null) {
 			pointData.push({
-				code: elem.code,
-				entry_price: elem.entry_price,
-				entry_action: elem.entry_action,
-				entry_date: elem.entry_date,
-				entry_date_format: Date.parse(elem.entry_date),
-				exit_price: elem.exit_price,
-				exit_action: elem.exit_action
+				code: elem["code"],
+				entry_price: elem["entryPrice"],
+				entry_action: elem["entryAction"],
+				entry_date: elem["entryDate"],
+				entry_date_format: Date.parse(elem["entryDate"]),
+				exit_price: elem["exitPrice"],
+				exit_action: elem["exitAction"]
 			})
 		}
 	}

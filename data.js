@@ -4,10 +4,10 @@ const positions = {
     {
       "code": "p_68",
       "entryPrice": 8982.1,
-      "entryDate": "2019-11-08T09:11:16.28",
+      "entryDate": "2019-11-08T00:00:00",
       "entryAction": "short",
       "exitPrice": 7414.4,
-      "exitDate": "2019-11-27T16:49:06.92",
+      "exitDate": "2019-11-27T16:49:06",
       "exitAction": "closeShort"
     }
   ]
@@ -66,7 +66,7 @@ const candles = [
   },
   {
     "id": "388dcee6-ee4d-437a-8fe2-ae3e8f64af1d",
-    "time": 1573171200000,
+    "time": 1573149600000,
     "timestamp": "2019-11-08T00:00:00",
     "open": 9212.5,
     "high": 9252.9,
