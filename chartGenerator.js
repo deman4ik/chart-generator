@@ -64,12 +64,12 @@ module.exports.generateImage = async function (robot, position, candles) {
     			ctx.fillStyle = '#ffffff';
     			ctx.fillText('Trade', 40, 54);
 
-				const profitText = position.profit ? position.profit + ' $' : "";
+				const profitText = position.profit ? summFormat(position.profit) + "" : summFormat("0");
 
-    			ctx.font = `48px 'Roboto', 'Ubuntu', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif`;
+    			ctx.font = `42px 'Roboto', 'Ubuntu', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif`;
     			ctx.textAlign = "end";
     			ctx.fillStyle = position.profit > 0 ? '#1CA46B' : '#CD3E60';
-    			ctx.fillText(profitText, chartInstance.chart.width - 40, 52);
+    			ctx.fillText(profitText[0] != "-" ? "+" + profitText : profitText, chartInstance.chart.width - 40, 54);
     		}
     	});
 
@@ -441,11 +441,19 @@ module.exports.generateImage = async function (robot, position, candles) {
     	const y = (params.l < params.h ? params.l : params.h) - 10,
     		data = params.elem,
     		dateTime = dateTimeFormat(data.date),
-    		circleClr = ctx.createLinearGradient(0, 20, 0, 0);
+			circleClr = ctx.createLinearGradient(0, 20, 0, 0);
+		
+		let borderClr, firstClr, secondClr;
 
-    	let borderClr = data.action == "long" || data.action == "closeShort" ? 'rgba(25, 140, 127, 0.2)' : 'rgba(189, 54, 86, 0.2)',
-    		firstClr = data.action == "long" || data.action == "closeShort" ? "#198C7F" : "#D63535",
-    		secondClr = data.action == "long" || data.action == "closeShort" ? "#16B3EA" : "#9952E0";
+		if (data.action == "long" && data.exitAction == "closeLong") {
+			borderClr = 'rgba(25, 140, 127, 0.2)';
+			firstClr  = "#198C7F";
+			secondClr = "#16B3EA";
+		} else {
+			borderClr = 'rgba(189, 54, 86, 0.2)';
+			firstClr  = "#D63535";
+			secondClr = "#9952E0";
+		}
 
     	ctx.fillStyle = borderClr
     	ctx.beginPath();
@@ -465,7 +473,9 @@ module.exports.generateImage = async function (robot, position, candles) {
 		ctx.beginPath();
 		ctx.fillStyle = "#ffffff";
 
-    	if (data.action == "long" || data.action == "closeShort") {
+		// console.log('data', data)
+
+    	if (data.action == "long" && data.exitAction == "closeShort") {
     		ctx.moveTo(params.x - 6, y - 2);
     		ctx.lineTo(params.x + 6, y - 2);
     		ctx.lineTo(params.x, y - 8);
@@ -482,7 +492,6 @@ module.exports.generateImage = async function (robot, position, candles) {
 		
 		setExplanation(ctx, params.x, y, data, dateTime, shift)
 
-    	
     	ctx.globalCompositeOperation = "source-over";
 	}
 	
@@ -537,7 +546,7 @@ module.exports.generateImage = async function (robot, position, candles) {
     			l: params[i].low,
     			c: params[i].close,
     			timestamp: params[i].timestamp
-    		})
+			})
     	}
 
     	return candlesArr;
@@ -552,6 +561,7 @@ module.exports.generateImage = async function (robot, position, candles) {
     		date: params.entryDate,
     		timestamp: params.entryCandleTimestamp,
     		action: params.entryAction,
+    		exitAction: params.exitAction,
     	})
 
     	if (params.status == 'closed' && params.exitAction != null) {
@@ -560,7 +570,8 @@ module.exports.generateImage = async function (robot, position, candles) {
     			price: params.exitPrice,
     			date: params.exitDate,
     			timestamp: params.exitCandleTimestamp,
-    			action: params.exitAction,
+				action: params.entryAction,
+				exitAction: params.exitAction,
     		})
     	}
 
