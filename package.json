@@ -19,6 +19,7 @@
   "homepage": "https://github.com/PavelDotsenko/chart-generator#readme",
   "dependencies": {
     "chart.js": "^2.9.3",
-    "chartjs-node": "^1.7.1"
+    "chartjs-node": "^1.7.1",
+    "image-js": "^0.21.8"
   }
 }
