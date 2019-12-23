@@ -123,7 +123,7 @@ module.exports.generateImage = async function (robot, position, candles) {
     				}
     			});
 
-    			const space = (me.max - me.min) * 0.2;
+    			const space = (me.max - me.min) * 0.3;
 
     			me.min -= space;
     			me.max += space;
@@ -572,9 +572,11 @@ module.exports.generateImage = async function (robot, position, candles) {
     }).then(buffer => {
         Array.isArray(buffer)
         return chartNode.getImageStream('image/png');
-    }).then(streamResult => {
+	}).then(streamResult => {
+		const fileName = position.code + "_" + robot.name.replace(/ /g, "_").replace(/\//g, "_");
+		
         streamResult.stream
         streamResult.length
-        return chartNode.writeImageToFile('image/png', './dest/testimage.png');
+        return chartNode.writeImageToFile('image/png', `./dest/${fileName}.png`);
     }).then(() => { });
 }
