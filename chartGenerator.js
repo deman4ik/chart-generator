@@ -573,7 +573,7 @@ module.exports.generateImage = async function (robot, position, candles) {
         Array.isArray(buffer)
         return chartNode.getImageStream('image/png');
 	}).then(streamResult => {
-		const fileName = position.code + "_" + robot.name.replace(/ /g, "_").replace(/\//g, "_");
+		const fileName = `${position.code}_` + robot.name.replace(/ /g, "_").replace(/\//g, "_");
 		
         streamResult.stream
         streamResult.length
