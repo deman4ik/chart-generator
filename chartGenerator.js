@@ -501,8 +501,6 @@ module.exports.generateImage = async function (robot, position, candles) {
     	ctx.stroke();
     	ctx.fill();
 		ctx.closePath();
-		
-		console.log(summFormat(12345.1684984654))
 
     	ctx.font = "bold 24px 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'";
     	ctx.fillStyle = "#ffffff";
