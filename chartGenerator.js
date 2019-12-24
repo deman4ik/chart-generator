@@ -388,26 +388,28 @@ module.exports.generateImage = async function (robot, position, candles) {
     const chartJsOptions = {
     	type: 'candlestick',
     	data: {
-    		datasets: [{
-    			label: ChartTitle,
-    			type: 'candlestick',
-    			data: chartData,
-    			color: {
-    				up: '#1CA46B',
-    				down: '#CD3E60',
-    				unchanged: '#999'
-    			}
-    		},
-    		{
-    			label: '',
-    			type: 'helperpoint',
-    			data: pointData,
-    			color: {
-    				up: '#1CA46B',
-    				down: '#CD3E60',
-    				unchanged: '#999'
-    			}
-    		}]
+			datasets: [
+				{
+					label: ChartTitle,
+					type: 'candlestick',
+					data: chartData,
+					color: {
+						up: '#1CA46B',
+						down: '#CD3E60',
+						unchanged: '#999'
+					}
+				},
+				// {
+				// 	label: '',
+				// 	type: 'helperpoint',
+				// 	data: pointData,
+				// 	color: {
+				// 		up: '#1CA46B',
+				// 		down: '#CD3E60',
+				// 		unchanged: '#999'
+				// 	}
+				// }
+			]
     	},
     	options: {
     		layout: {
@@ -422,7 +424,6 @@ module.exports.generateImage = async function (robot, position, candles) {
     			labels: {
     				fontSize: 48,
     				fontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
-    				// fontStyle: 'bold',
     				fontColor: '#FFFFFF',
     				boxWidth: 0
     			}
