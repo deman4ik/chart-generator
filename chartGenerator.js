@@ -66,7 +66,7 @@ module.exports.generateImage = async function (robot, position, candles) {
 
 				const profitText = position.profit ? summFormat(position.profit) + "" : summFormat("0");
 
-    			ctx.font = `42px 'Roboto', 'Ubuntu', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif`;
+    			ctx.font = `bold 42px 'Roboto', 'Ubuntu', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif`;
     			ctx.textAlign = "end";
     			ctx.fillStyle = position.profit > 0 ? '#1CA46B' : '#CD3E60';
     			ctx.fillText(profitText[0] != "-" ? "+" + profitText : profitText, chartInstance.chart.width - 40, 54);
@@ -319,7 +319,7 @@ module.exports.generateImage = async function (robot, position, candles) {
     			ctx.closePath();
 
     			for (let k = 0; k < pointData.length; k++) {
-    				if (pointData[k].timestamp == timestamp) {
+					if (pointData[k].timestamp == timestamp) {
     					fillPoin(_chart, { x, h, l, elem: pointData[k] })
     				}
     			}
@@ -422,7 +422,7 @@ module.exports.generateImage = async function (robot, position, candles) {
     			labels: {
     				fontSize: 48,
     				fontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
-    				fontStyle: 'bold',
+    				// fontStyle: 'bold',
     				fontColor: '#FFFFFF',
     				boxWidth: 0
     			}
@@ -437,7 +437,7 @@ module.exports.generateImage = async function (robot, position, candles) {
     };
 
 	function fillPoin(_chart, params) {
-		const ctx = _chart.ctx
+		const ctx = _chart.ctx;
     	const y = (params.l < params.h ? params.l : params.h) - 10,
     		data = params.elem,
     		dateTime = dateTimeFormat(data.date),
@@ -445,14 +445,14 @@ module.exports.generateImage = async function (robot, position, candles) {
 		
 		let borderClr, firstClr, secondClr;
 
-		if (data.action == "long" && data.exitAction == "closeLong") {
-			borderClr = 'rgba(25, 140, 127, 0.2)';
-			firstClr  = "#198C7F";
-			secondClr = "#16B3EA";
-		} else {
+		if (data.action == "short" || data.action == "closeShort") {
 			borderClr = 'rgba(189, 54, 86, 0.2)';
 			firstClr  = "#D63535";
 			secondClr = "#9952E0";
+		} else if (data.action == "long" || data.action == "closeLong") {
+			borderClr = 'rgba(25, 140, 127, 0.2)';
+			firstClr  = "#198C7F";
+			secondClr = "#16B3EA";
 		}
 
     	ctx.fillStyle = borderClr
@@ -473,17 +473,15 @@ module.exports.generateImage = async function (robot, position, candles) {
 		ctx.beginPath();
 		ctx.fillStyle = "#ffffff";
 
-		// console.log('data', data)
-
-    	if (data.action == "long" && data.exitAction == "closeShort") {
-    		ctx.moveTo(params.x - 6, y - 2);
+		if (data.action == "long" || data.action == "closeShort") {
+			ctx.moveTo(params.x - 6, y - 2);
     		ctx.lineTo(params.x + 6, y - 2);
     		ctx.lineTo(params.x, y - 8);
-    	} else {
-    		ctx.moveTo(params.x, y);
+		} else if (data.action == "short" || data.action == "closeLong") {
+			ctx.moveTo(params.x, y);
     		ctx.lineTo(params.x - 6, y - 6);
     		ctx.lineTo(params.x + 6, y - 6);
-    	}
+		}
 
     	ctx.fill();
 		ctx.closePath();
@@ -491,8 +489,28 @@ module.exports.generateImage = async function (robot, position, candles) {
 		const shift = params.x + 150 > _chart.width ? 100 : params.x - 150 < 100 ? -100 : 0;
 		
 		setExplanation(ctx, params.x, y, data, dateTime, shift)
+		setSalePoint(_chart, params.x, data.price)
 
     	ctx.globalCompositeOperation = "source-over";
+	}
+
+	function setSalePoint(_chart, x, y, color = '#FF0000') {
+		const ctx = _chart.ctx
+
+		ctx.beginPath();
+		ctx.arc(x, getYRatio(_chart, y), 5, 0, 2 * Math.PI);
+		ctx.fillStyle = color;
+    	ctx.fill();
+    	ctx.closePath();
+	}
+
+	function getYRatio(chart, value) {
+		const smin = chart.scales['y-axis-0'].min
+		const smax = chart.scales['y-axis-0'].max
+		const dmin = chart.height - 125
+		const dmax = 140
+
+		return ((value-smin) / (smax-smin)) * (dmax-dmin) + dmin;
 	}
 	
 	function setExplanation(ctx, x, y, data, dateTime, shift) {
@@ -514,9 +532,9 @@ module.exports.generateImage = async function (robot, position, candles) {
     	ctx.font = "bold 24px 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'";
     	ctx.fillStyle = "#ffffff";
     	ctx.textAlign = "center";
-    	ctx.fillText(dateTime, x - shift, y - 40);
-    	ctx.fillText(summFormat(data.price), x - shift, y - 70);
-    	ctx.fillText(typeActions[data.action] + ": " + data.code, x - shift, y - 100);
+    	ctx.fillText(dateTime, x - shift, y - 43);
+    	ctx.fillText(summFormat(data.price), x - shift, y - 73);
+    	ctx.fillText(typeActions[data.action] + ": " + data.code, x - shift, y - 103);
 	}
 
 	function summFormat(params) {
@@ -561,7 +579,6 @@ module.exports.generateImage = async function (robot, position, candles) {
     		date: params.entryDate,
     		timestamp: params.entryCandleTimestamp,
     		action: params.entryAction,
-    		exitAction: params.exitAction,
     	})
 
     	if (params.status == 'closed' && params.exitAction != null) {
@@ -570,8 +587,7 @@ module.exports.generateImage = async function (robot, position, candles) {
     			price: params.exitPrice,
     			date: params.exitDate,
     			timestamp: params.exitCandleTimestamp,
-				action: params.entryAction,
-				exitAction: params.exitAction,
+				action: params.exitAction,
     		})
     	}
 

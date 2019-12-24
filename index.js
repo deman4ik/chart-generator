@@ -1,27 +1,27 @@
 const { generateImage } = require("./chartGenerator");
  
- const robot = {
+const robot = {
 	"id": "f1893b3c-8768-40d7-a3c0-a438f994f6f8",
 	"name": "BR-1 Bitfinex BTC/USD 1d",
 	"exchange": "bitfinex",
 	"asset": "BTC",
 	"currency": "USD",
 	"timeframe": 1440
- };
+};
  
- const position = {
-			 "code": "p_68",
-			 "status": "closed",
-			 "entryPrice": 8982.1,
-			 "entryDate": "2019-11-08T09:11:16.28",
-			 "entryCandleTimestamp": "2019-11-08T00:00:00",
-			 "entryAction": "short",
-			 "exitPrice": 7414.4,
-			 "exitDate": "2019-11-27T16:49:06.92",
-			 "exitCandleTimestamp": "2019-11-27T00:00:00",
-			 "exitAction": "closeShort",
-			 "profit": 1567.7
- };
+const position = {
+	"code": "p_68",
+	"status": "closed",
+	"entryPrice": 8982.1,
+	"entryDate": "2019-11-08T09:11:16.28",
+	"entryCandleTimestamp": "2019-11-08T00:00:00",
+	"entryAction": "short",
+	"exitPrice": 7414.4,
+	"exitDate": "2019-11-27T16:49:06.92",
+	"exitCandleTimestamp": "2019-11-27T00:00:00",
+	"exitAction": "closeShort",
+	"profit": 1567.7
+};
  
  const candles = [
 	   {
