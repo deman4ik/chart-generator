@@ -1,5 +1,6 @@
 const ChartjsNode = require('chartjs-node');
 const Canvas = require('canvas');
+const moment = require('moment');
 
 const typeActions = {
 	'open': 'Open',
@@ -135,10 +136,12 @@ module.exports.generateImage = async function (robot, position, candles) {
 
 		Chart.defaults.financial = {
 			label: '',
-			// hover: { mode: 'label' },
 			scales: {
 				xAxes: [{
 					type: 'time',
+					parser: function(date) {
+						return moment(date).utc();
+					},
 					time: {
 						unit: 'month',
 						displayFormats: { month: xAxesFormat }
@@ -584,6 +587,7 @@ module.exports.generateImage = async function (robot, position, candles) {
 
 	function candlesSet(params) {
 		const candlesArr = [];
+		let minTime;
 
 		for (let i = 0; i < params.length; i++) {
 			candlesArr.push({
